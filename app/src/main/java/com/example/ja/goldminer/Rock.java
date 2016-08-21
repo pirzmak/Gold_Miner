@@ -12,7 +12,7 @@ public class Rock extends GameObject {
     private Type type;
     private boolean catched;
     private int cost;
-    private int weight;
+    private double weight;
 
     public enum Type {SROCK, MROCK, BROCK, SGOLD, MGOLD, BGOLD, DIAMOND}
 
@@ -28,31 +28,31 @@ public class Rock extends GameObject {
         switch (type) {
             case SROCK:
                 cost = 10;
-                weight = 3;
+                weight = 7;
                 break;
             case MROCK:
                 cost = 25;
-                weight = 5;
+                weight = 9;
                 break;
             case BROCK:
                 cost = 50;
-                weight = 7;
+                weight = 9.5;
                 break;
             case SGOLD:
                 cost = 50;
-                weight = 3;
+                weight = 6;
                 break;
             case MGOLD:
                 cost = 200;
-                weight = 5;
+                weight = 9;
                 break;
             case BGOLD:
                 cost = 500;
-                weight = 7;
+                weight = 9.5;
                 break;
             case DIAMOND:
                 cost = 600;
-                weight = 1;
+                weight = 3;
                 break;
         }
     }
@@ -72,7 +72,15 @@ public class Rock extends GameObject {
         this.catched = catched;
     }
 
-    public int getWeight() {
+    public boolean isCatched() {
+        return catched;
+    }
+
+    public double getWeight() {
         return weight;
+    }
+
+    public int getCost() {
+        return cost;
     }
 }

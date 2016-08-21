@@ -3,6 +3,8 @@ package com.example.ja.goldminer;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -19,20 +21,26 @@ import java.util.ArrayList;
 
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
 
-    public static final double SCALE = 1.5;
-    public static final int HEiGHT = 900;
-    public static final int WIDTH = 720;
+    public double SCALE = getResources().getDisplayMetrics().density;
+    public static final int HEiGHT = 600;
+    public static final int WIDTH = 480;
+
     private MainThread thread;
     private Map map;
     private Miner miner;
     private Hand hand;
     private ArrayList<Rock> rocks;
+    private MoneyProgress progres;
+    private Time time;
+    private Stat stat;
 
-    public GamePanel(Context context){
+    public GamePanel(Context context,Stat stat){
         super(context);
 
         getHolder().addCallback(this);
         thread = new MainThread(getHolder(), this);
+
+        this.stat = stat;
 
         setFocusable(true);
     }
@@ -55,11 +63,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
     @Override
     public void  surfaceCreated(SurfaceHolder holder){
 
-        createMap(1);
-        miner = new Miner(map.getMinerX(),(int)(map.getMinerY()/SCALE) - 80,(int)(80*SCALE),(int)(80*SCALE),
+        createMap();
+        miner = new Miner(map.getMinerX(),map.getMinerY(),(int)(80*SCALE),(int)(80*SCALE),
                 BitmapFactory.decodeResource(getResources(),R.drawable.miner),3);
-        hand = new Hand(map.getMinerX() + miner.getWidth()/2,map.getMinerY() - 28,(int)(20*SCALE),(int)(15*SCALE),
-                BitmapFactory.decodeResource(getResources(),R.drawable.hand),3);
+        hand = new Hand(map.getMinerX(),map.getMinerY(),(int)(20*SCALE),(int)(15*SCALE),
+                BitmapFactory.decodeResource(getResources(),R.drawable.hand),3,SCALE);
 
         thread.setRunning(true);
         thread.start();
@@ -67,23 +75,79 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
         setFocusable(true);
     }
 
-    private void createMap(int rockNum)
-    {
-        map = new Map((int)((WIDTH/2)/SCALE),220,BitmapFactory.decodeResource(getResources(),R.drawable.bg));
-        rocks = new ArrayList<>();
-        rocks.add(new Rock(240,500,BitmapFactory.decodeResource(getResources(),R.drawable.mrock),Rock.Type.MROCK));
-        rocks.add(new Rock(340,550,BitmapFactory.decodeResource(getResources(),R.drawable.srock),Rock.Type.SROCK));
-        rocks.add(new Rock(180,370,BitmapFactory.decodeResource(getResources(),R.drawable.brock),Rock.Type.BROCK));
-    }
-
     public boolean onTouchEvent(MotionEvent event){
         if(event.getAction() == MotionEvent.ACTION_DOWN)
         {
-            if(hand.getStatus()==Hand.Status.STOPED)
-                hand.down();
+            if(!time.run())
+            {
+            }
+            else if(hand.getStatus()==Hand.Status.STOPED&&time.run())
+                        hand.down();
             return true;
         }
         return super.onTouchEvent(event);
+    }
+
+    private void createMap()
+    {
+        map = new Map((int)((WIDTH/2)*SCALE),(int)(120*SCALE),BitmapFactory.decodeResource(getResources(),R.drawable.bg));
+        rocks = new ArrayList<>();
+
+        int type;
+        int tmpx;
+        int tmpy;
+        int j=0;
+        int u;
+
+        for(int i=0;i<stat.getNr();i++)
+        {
+            type = Integer.parseInt(stat.getRocks().substring(j, ++j));
+            j++;
+
+            u=j;
+            while(stat.getRocks().charAt(u)!='/')
+                u++;
+            tmpx = Integer.parseInt(stat.getRocks().substring(j, u++));
+
+            j=u;
+            while(stat.getRocks().charAt(u)!='/')
+                u++;
+            tmpy = Integer.parseInt(stat.getRocks().substring(j, u++));
+
+            j=u;
+
+            whatRock(type,(int)(SCALE*tmpx),(int)(SCALE*tmpy));
+        }
+
+        progres = new MoneyProgress((int)(430*SCALE),(int)(6.5*SCALE),(int)(30*SCALE),(int)(30*SCALE),500,BitmapFactory.decodeResource(getResources(),R.drawable.money));
+        time = new Time((int)(40*SCALE),(int)(66.7*SCALE),(int)(30*SCALE),(int)(33*SCALE),BitmapFactory.decodeResource(getResources(),R.drawable.time),5);
+
+    }
+
+    public void whatRock(int n,int x,int y) {
+        switch (n) {
+            case 0:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.srock),Rock.Type.SROCK));
+                break;
+            case 1:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.mrock),Rock.Type.MROCK));
+                break;
+            case 2:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.brock),Rock.Type.BROCK));
+                break;
+            case 3:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.sgold),Rock.Type.SGOLD));
+                break;
+            case 4:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.mgold),Rock.Type.SGOLD));
+                break;
+            case 5:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.bgold),Rock.Type.BGOLD));
+                break;
+            case 6:
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.diamond),Rock.Type.DIAMOND));
+                break;
+        }
     }
 
     public void update(){
@@ -97,24 +161,27 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
                 hand.up(rocks.get(i).getWeight());
             }
 
-            if(rocks.get(i).getY()<=map.getMinerY() - 28)
+            if(rocks.get(i).isCatched() && hand.getY()<=map.getMinerY()){
+                progres.update(rocks.get(i).getCost());
                 rocks.remove(i);
+                hand.stop();
+            }
         }
         miner.update();
+        time.update();
+
     }
 
     public boolean collision(GameObject a, GameObject b){
-
-        if(Rect.intersects(a.getRectangle(),b.getRectangle()))return true;
-        return false;
-
+        return Rect.intersects(a.getRectangle(),b.getRectangle());
     }
 
 
     @Override
     public void draw(Canvas canvas) {
-        final float scaleFactorX = getWidth()/(WIDTH*1.f);
-        final float scaleFactorY = getHeight()/(HEiGHT*1.f);
+        super.draw(canvas);
+        final float scaleFactorX = (float)(getWidth()/(WIDTH*SCALE));
+        final float scaleFactorY = (float)(getHeight()/(HEiGHT*SCALE));
 
         if(canvas!=null) {
             final int savedState = canvas.save();
@@ -123,15 +190,26 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
             miner.draw(canvas);
             hand.draw(canvas);
             for(int i=0; i<rocks.size(); ++i)
-            {
                 rocks.get(i).draw(canvas);
+
+            progres.draw(canvas);
+            time.draw(canvas);
+
+            if(!time.run()){
+                String text = "YOU LOSE";
+                if(progres.win())
+                    text="YOU WIN";
+
+                Paint paint = new Paint();
+                paint.setTextSize(50);
+                paint.setFakeBoldText(true);
+                paint.setColor(Color.parseColor("#49DF23"));
+                canvas.drawText(text,(int)((WIDTH/2)*SCALE),(int)((HEiGHT/2)*SCALE),paint);
             }
             canvas.restoreToCount(savedState);
         }
     }
 
-    public void reset()
-    {
-    }
+
 
 }

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.util.Log;
 
 /**
  * bel ble
@@ -14,7 +15,7 @@ public class Hand extends GameObject {
 
     private static  final int R=40;
     private double v;
-    private double a;
+    private double scale;
     Paint paint;
     Paint paint2;
     private int t;
@@ -25,14 +26,13 @@ public class Hand extends GameObject {
 
     public enum Status {STOPED,DOWN,UP}
 
-    public Hand(int x, int y, int w, int h, Bitmap res, int numFrames) {
+    public Hand(int x, int y, int w, int h, Bitmap res, int numFrames, double scale) {
         super(x - w/2, y + R, w, h);
 
         image = new Bitmap[numFrames];
+
         for(int i=0;i<numFrames;i++)
-        {
             image[i] = Bitmap.createBitmap(res, i*width, 0, width, height);
-        }
 
         startX = x;
         startY = y;
@@ -42,6 +42,7 @@ public class Hand extends GameObject {
         setPaint();
 
         status = Status.STOPED;
+        this.scale=scale;
     }
 
     private void setPaint()
@@ -65,22 +66,22 @@ public class Hand extends GameObject {
             if(y<startY)
                 y=(int)(-R*Math.sin(v*t)+startY);
 
-            System.out.println(x + " " + startX);
             t++;
         }
         else if(status==Status.DOWN)
         {
-            x+=v*Math.cos(a);
-            y+=v*Math.sin(a);
+            x+=v*Math.cos(alpha(x,y));
+            y+=v*Math.sin(alpha(x,y));
 
-            if(x>=GamePanel.WIDTH || y>=GamePanel.HEiGHT || x<=0)
+            if(x>=GamePanel.WIDTH*scale || y>=GamePanel.HEiGHT*scale|| x<=0)
                 up(0);
         }
         else if(status==Status.UP)
         {
-            x+=v*Math.cos(a);
-            y+=v*Math.sin(a);
-            if(y<=startY)
+            x+=scale*v*Math.cos(alpha(x,y));
+            y+=scale*v*Math.sin(alpha(x,y));
+
+            if(y<=startY&&(x+20>startX&&x-20<startX))
             {
                 status=Status.STOPED;
                 v=0.05;
@@ -89,24 +90,38 @@ public class Hand extends GameObject {
     }
 
     public void draw(Canvas canvas){
-        int
-        if(startX-x>10)
-            canvas.drawBitmap(image[1],x,y,null);
-        else if(startX-x<-10)
-            canvas.drawBitmap(image[0],x,y,null);
-        else
-            canvas.drawBitmap(image[2],x,y,null);
+        int hx,hy;
+        Bitmap himage;
+        hx=x - width / 2;
+        hy=y;
 
-        canvas.drawLine(startX, startY, x + width/2, y, paint);
-        canvas.drawLine(startX, startY, x + width/2, y, paint2);
+        himage=image[1];
+        if(startX-x>15) {
+            himage=image[0];
+            hx= x - width + 10;
+            hy= y - 5;
+        }
+        else if(startX-x<-15){
+            himage=image[2];
+            hx= x - 10;
+            hy= y - 5;
+        }
+
+        canvas.drawBitmap(himage, hx, hy, null);
+        canvas.drawLine(startX, startY, x, y, paint);
+        canvas.drawLine(startX, startY, x, y, paint2);
     }
 
     public void down(){
-       if(status != Status.DOWN)
-           status = Status.DOWN;
-        a=alpha(x,y);
+        status = Status.DOWN;
         t=0;
-        v=8;
+        v=0.5;
+    }
+
+    public void stop()
+    {
+        status = Status.STOPED;
+        v=0.05;
     }
 
     public Status getStatus() {
@@ -118,9 +133,8 @@ public class Hand extends GameObject {
                 Math.sqrt((startX - x)*(startX - x)+(startY - y)*(startY - y)));
     }
 
-    public void up(int get){
+    public void up(double get){
         status = Status.UP;
-        a=alpha(x,y);
-        v=-8 + get;
+        v=-10 + get;
     }
 }

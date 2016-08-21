@@ -12,7 +12,7 @@ public class Miner extends GameObject{
     private Animation animation;
 
     public Miner(int x, int y, int width, int height, Bitmap res, int numFrames) {
-        super(x, y, width, height);
+        super(x-width/2, y - height, width, height);
 
         Bitmap[] image = new Bitmap[numFrames];
 
