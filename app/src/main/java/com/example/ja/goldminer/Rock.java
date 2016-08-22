@@ -2,6 +2,7 @@ package com.example.ja.goldminer;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 
 /**
  * Created by Ja on 2016-08-05.
@@ -32,7 +33,7 @@ public class Rock extends GameObject {
                 break;
             case MROCK:
                 cost = 25;
-                weight = 9;
+                weight = 9.;
                 break;
             case BROCK:
                 cost = 50;
@@ -44,7 +45,7 @@ public class Rock extends GameObject {
                 break;
             case MGOLD:
                 cost = 200;
-                weight = 9;
+                weight = 9.;
                 break;
             case BGOLD:
                 cost = 500;
@@ -82,5 +83,10 @@ public class Rock extends GameObject {
 
     public int getCost() {
         return cost;
+    }
+
+    @Override
+    public Rect getRectangle() {
+        return new Rect(x+3, y+3, x+width-3, y+height);
     }
 }

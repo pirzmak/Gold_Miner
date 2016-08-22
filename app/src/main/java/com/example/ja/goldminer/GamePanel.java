@@ -1,14 +1,21 @@
 package com.example.ja.goldminer;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -33,6 +40,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
     private MoneyProgress progres;
     private Time time;
     private Stat stat;
+    private StatDAO statDAO;
+    final Dialog dialog;
+
 
     public GamePanel(Context context,Stat stat){
         super(context);
@@ -41,6 +51,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
         thread = new MainThread(getHolder(), this);
 
         this.stat = stat;
+        dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.level_end_dialog);
+        statDAO = new StatDAO(context);
 
         setFocusable(true);
     }
@@ -80,8 +94,43 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
         {
             if(!time.run())
             {
+
+                Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+                // set the custom dialog components - text, image and button
+                TextView text = (TextView) dialog.findViewById(R.id.text);
+                text.setText("YOU LOSE");
+                if(progres.win())
+                {
+                    Stat pom= statDAO.getNoteById(1);
+                    pom.setNr(pom.getNr()+1);
+                    text.setText("YOU WIN");
+                    dialogButton.setBackground(getResources().getDrawable(R.drawable.next));
+                }
+
+                // if button is clicked, close the custom dialog
+                dialogButton.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(progres.win())
+                            reset(stat.getId()+1);
+                        else
+                            reset(stat.getId());
+                    }
+                });
+
+                Button denyButton = (Button) dialog.findViewById(R.id.dialogButtonDeny);
+                denyButton.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                        ((Activity) getContext()).finish();
+
+                    }
+                });
+
+                dialog.show();
             }
-            else if(hand.getStatus()==Hand.Status.STOPED&&time.run())
+            if(hand.getStatus()==Hand.Status.STOPED&&time.run())
                         hand.down();
             return true;
         }
@@ -139,7 +188,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
                 rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.sgold),Rock.Type.SGOLD));
                 break;
             case 4:
-                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.mgold),Rock.Type.SGOLD));
+                rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.mgold),Rock.Type.MGOLD));
                 break;
             case 5:
                 rocks.add(new Rock(x,y,BitmapFactory.decodeResource(getResources(),R.drawable.bgold),Rock.Type.BGOLD));
@@ -151,25 +200,26 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
     }
 
     public void update(){
-        hand.update();
-        for(int i=0; i<rocks.size(); ++i)
-        {
-            rocks.get(i).update(hand.getX(),hand.getY());
 
-            if(collision(rocks.get(i),hand)&&hand.getStatus() == Hand.Status.DOWN){
-                rocks.get(i).setCatched(true);
-                hand.up(rocks.get(i).getWeight());
-            }
+        if(time.run()) {
+            hand.update();
+            for (int i = 0; i < rocks.size(); ++i) {
+                rocks.get(i).update(hand.getX(), hand.getY());
 
-            if(rocks.get(i).isCatched() && hand.getY()<=map.getMinerY()){
-                progres.update(rocks.get(i).getCost());
-                rocks.remove(i);
-                hand.stop();
+                if (collision(rocks.get(i), hand) && hand.getStatus() == Hand.Status.DOWN) {
+                    rocks.get(i).setCatched(true);
+                    hand.up(rocks.get(i).getWeight());
+                }
+
+                if (rocks.get(i).isCatched() && hand.getY() <= map.getMinerY()) {
+                    progres.update(rocks.get(i).getCost());
+                    rocks.remove(i);
+                    hand.stop();
+                }
             }
+            miner.update();
+            time.update();
         }
-        miner.update();
-        time.update();
-
     }
 
     public boolean collision(GameObject a, GameObject b){
@@ -195,21 +245,19 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
             progres.draw(canvas);
             time.draw(canvas);
 
-            if(!time.run()){
-                String text = "YOU LOSE";
-                if(progres.win())
-                    text="YOU WIN";
-
-                Paint paint = new Paint();
-                paint.setTextSize(50);
-                paint.setFakeBoldText(true);
-                paint.setColor(Color.parseColor("#49DF23"));
-                canvas.drawText(text,(int)((WIDTH/2)*SCALE),(int)((HEiGHT/2)*SCALE),paint);
-            }
             canvas.restoreToCount(savedState);
         }
     }
 
-
-
+    private void reset(int id){
+        rocks.clear();
+        time.reset();
+        hand.stop();
+        progres.reset();
+        Log.d("Reset","tak");
+        stat = statDAO.getNoteById(id);
+        Log.d("Reset","tak2 "+ stat.getNr());
+        createMap();
+        dialog.dismiss();
+    }
 }

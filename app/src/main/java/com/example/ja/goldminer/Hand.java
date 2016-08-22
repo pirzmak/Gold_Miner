@@ -15,7 +15,10 @@ public class Hand extends GameObject {
 
     private static  final int R=40;
     private double v;
+    private double alpha;
     private double scale;
+    private double a;
+    private double b;
     Paint paint;
     Paint paint2;
     private int t;
@@ -24,7 +27,7 @@ public class Hand extends GameObject {
     private Status status;
     Bitmap[] image;
 
-    public enum Status {STOPED,DOWN,UP}
+    public enum Status {STOPED,DOWN,UP,UPBIG}
 
     public Hand(int x, int y, int w, int h, Bitmap res, int numFrames, double scale) {
         super(x - w/2, y + R, w, h);
@@ -70,22 +73,22 @@ public class Hand extends GameObject {
         }
         else if(status==Status.DOWN)
         {
-            x+=v*Math.cos(alpha(x,y));
-            y+=v*Math.sin(alpha(x,y));
+            y+=v*Math.sin(alpha);
+            x=(int)((y-b)/a);
 
             if(x>=GamePanel.WIDTH*scale || y>=GamePanel.HEiGHT*scale|| x<=0)
                 up(0);
         }
         else if(status==Status.UP)
         {
-            x+=scale*v*Math.cos(alpha(x,y));
-            y+=scale*v*Math.sin(alpha(x,y));
-
+            y+=v*Math.sin(alpha);
+            x=(int)((y-b)/a);
             if(y<=startY&&(x+20>startX&&x-20<startX))
             {
                 status=Status.STOPED;
                 v=0.05;
             }
+
         }
     }
 
@@ -114,8 +117,9 @@ public class Hand extends GameObject {
 
     public void down(){
         status = Status.DOWN;
+        alpha=alpha(x,y);
         t=0;
-        v=0.5;
+        v=8;
     }
 
     public void stop()
@@ -129,12 +133,15 @@ public class Hand extends GameObject {
     }
 
     public double alpha(double x, double y){
+        a=(y-startY)/(x-startX);
+        b=startY - startX*a;
         return Math.acos(-(startX - x)/
                 Math.sqrt((startX - x)*(startX - x)+(startY - y)*(startY - y)));
     }
 
     public void up(double get){
         status = Status.UP;
+        alpha=alpha(x,y);
         v=-10 + get;
     }
 }

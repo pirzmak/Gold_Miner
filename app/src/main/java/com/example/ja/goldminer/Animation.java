@@ -3,6 +3,7 @@ package com.example.ja.goldminer;
 import android.graphics.Bitmap;
 
 /**
+ * Animacje
  * Created by Ja on 2016-08-05.
  */
 public class Animation {

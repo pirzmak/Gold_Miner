@@ -1,9 +1,11 @@
 package com.example.ja.goldminer;
 
+import java.io.Serializable;
+
 /**
  * Created by Ja on 2016-08-19.
  */
-public class Stat {
+public class Stat implements Serializable {
     private static Integer id = 0;
     private Integer nr;
     private String rocks;

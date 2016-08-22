@@ -39,7 +39,6 @@ public class Time extends GameObject{
 
     public void update(){
         animation.update();
-        System.out.println(run());
     }
 
     public void draw(Canvas canvas){

@@ -52,11 +52,9 @@ public class StatDAO {
     }
 
     // usunięcie notatki z bazy
-    public void deleteNoteById(final Integer id) {
-        dbHelper.getWritableDatabase().delete(Stats.TABLE_NAME,
-                " " + Stats.Columns.STAT_ID + " = ? ",
-                new String[]{id.toString()}
-        );
+    public void delete() {
+        dbHelper.getWritableDatabase().execSQL("DROP TABLE IF EXISTS " + Stats.TABLE_NAME);
+
     }
 
 

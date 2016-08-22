@@ -14,9 +14,9 @@ class DBHelper extends SQLiteOpenHelper {
     public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DROP TABLE IF EXISTS " + Stats.TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS " + Stats.TABLE_NAME);
         db.execSQL(
-                "create table "
+                "CREATE TABLE IF NOT EXISTS "
                         + Stats.TABLE_NAME
                         + " ( "
                         + Stats.Columns.STAT_ID
