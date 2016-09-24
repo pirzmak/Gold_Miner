@@ -19,13 +19,13 @@ public class Hand extends GameObject {
     private double scale;
     private double a;
     private double b;
-    Paint paint;
-    Paint paint2;
+    private Paint paint;
+    private Paint paint2;
     private int t;
     private int startX;
     private int startY;
     private Status status;
-    Bitmap[] image;
+    private Bitmap[] image;
 
     public enum Status {STOPED,DOWN,UP,UPBIG}
 
@@ -74,20 +74,34 @@ public class Hand extends GameObject {
         else if(status==Status.DOWN)
         {
             y+=v*Math.sin(alpha);
-            x=(int)((y-b)/a);
-
+            x+=v*Math.cos(alpha);
+            if(y>startY+5)
+                x=(int)((y-b)/a);
             if(x>=GamePanel.WIDTH*scale || y>=GamePanel.HEiGHT*scale|| x<=0)
                 up(0);
+
+            if(y<=startY)
+            {
+                status=Status.STOPED;
+                v=0.05;
+            }
+            Log.d("VD = ",Double.toString(y));
+            Log.d("BD = ",Double.toString(startY));
+            Log.d("AD = ",Double.toString(a));
+            Log.d("ALD = ",Double.toString(Math.sin(alpha)));
+
+
         }
         else if(status==Status.UP)
         {
             y+=v*Math.sin(alpha);
             x=(int)((y-b)/a);
-            if(y<=startY&&(x+20>startX&&x-20<startX))
+            if(y<=startY&&(x+5>startX&&x-5<startX) || y<startY)
             {
                 status=Status.STOPED;
                 v=0.05;
             }
+            Log.d("VU = ",Double.toString(v));
 
         }
     }

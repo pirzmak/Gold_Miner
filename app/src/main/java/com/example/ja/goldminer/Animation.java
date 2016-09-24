@@ -9,12 +9,14 @@ import android.graphics.Bitmap;
 public class Animation {
     private Bitmap[] frames;
     private int actualFrame;
+    private int znak;
     private long delay;
     private long startTime;
 
     public Animation(Bitmap[] frames, long delay) {
         this.frames = frames;
         this.delay = delay;
+        znak=1;
         actualFrame = 0;
         startTime = System.nanoTime();
     }
@@ -24,11 +26,17 @@ public class Animation {
 
         if(elapsed>delay)
         {
-            actualFrame++;
+            actualFrame+=znak;
             startTime = System.nanoTime();
         }
         if(actualFrame>=frames.length)
         {
+            znak=-1;
+            actualFrame=actualFrame-1;
+        }
+        if(actualFrame<=0)
+        {
+            znak=1;
             actualFrame=0;
         }
     }

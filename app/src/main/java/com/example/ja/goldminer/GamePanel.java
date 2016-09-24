@@ -79,7 +79,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
 
         createMap();
         miner = new Miner(map.getMinerX(),map.getMinerY(),(int)(80*SCALE),(int)(80*SCALE),
-                BitmapFactory.decodeResource(getResources(),R.drawable.miner),3);
+                BitmapFactory.decodeResource(getResources(),R.drawable.miner),3,1100);
         hand = new Hand(map.getMinerX(),map.getMinerY(),(int)(20*SCALE),(int)(15*SCALE),
                 BitmapFactory.decodeResource(getResources(),R.drawable.hand),3,SCALE);
 
@@ -139,7 +139,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
 
     private void createMap()
     {
-        map = new Map((int)((WIDTH/2)*SCALE),(int)(120*SCALE),BitmapFactory.decodeResource(getResources(),R.drawable.bg));
+        map = new Map((int)((WIDTH/2)*SCALE),(int)(122*SCALE),BitmapFactory.decodeResource(getResources(),R.drawable.bg));
         rocks = new ArrayList<>();
 
         int type;
@@ -245,6 +245,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback{
             progres.draw(canvas);
             time.draw(canvas);
 
+            if(!time.run())getHolder().unlockCanvasAndPost(canvas);
             canvas.restoreToCount(savedState);
         }
     }

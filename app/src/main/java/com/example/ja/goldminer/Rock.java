@@ -33,11 +33,11 @@ public class Rock extends GameObject {
                 break;
             case MROCK:
                 cost = 25;
-                weight = 9.;
+                weight = 9.5;
                 break;
             case BROCK:
                 cost = 50;
-                weight = 9.5;
+                weight = 9.8;
                 break;
             case SGOLD:
                 cost = 50;
@@ -45,11 +45,11 @@ public class Rock extends GameObject {
                 break;
             case MGOLD:
                 cost = 200;
-                weight = 9.;
+                weight = 9.5;
                 break;
             case BGOLD:
                 cost = 500;
-                weight = 9.5;
+                weight = 9.7;
                 break;
             case DIAMOND:
                 cost = 600;
@@ -61,7 +61,7 @@ public class Rock extends GameObject {
     public void update(int x, int y) {
         if (catched) {
             this.x = x - width / 2;
-            this.y = y - height / 2;
+            this.y = y - height / 2 + 5;
         }
     }
 

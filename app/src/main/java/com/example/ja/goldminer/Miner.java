@@ -11,7 +11,7 @@ public class Miner extends GameObject{
 
     private Animation animation;
 
-    public Miner(int x, int y, int width, int height, Bitmap res, int numFrames) {
+    public Miner(int x, int y, int width, int height, Bitmap res, int numFrames, int delay) {
         super(x-width/2, y - height, width, height);
 
         Bitmap[] image = new Bitmap[numFrames];
@@ -21,7 +21,7 @@ public class Miner extends GameObject{
             image[i] = Bitmap.createBitmap(res, i*width, 0, width, height);
         }
 
-        animation = new Animation(image,1100);
+        animation = new Animation(image,delay);
 
     }
 
